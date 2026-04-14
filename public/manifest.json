@@ -1,25 +1,25 @@
 {
-  "name": "NeuroTask",
-  "short_name": "NeuroTask",
-  "id": "/",
-  "start_url": "./",
-  "scope": "/",
+  "name": "NeuroPad",
+  "short_name": "NeuroPad",
+  "description": "Minimalist Image Diary",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#030712",
-  "theme_color": "#111827",
-  "description": "AI-powered thought organizer.",
+  "background_color": "#fcfcfc",
+  "theme_color": "#fcfcfc",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "orientation": "portrait",
+  "scope": "/"
 }
