@@ -2,23 +2,38 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Image as ImageIcon, Trash2, CheckCircle, Circle, Calendar, Download, LogOut, Lock, X } from 'lucide-react';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('neuropad_auth') === 'true');
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    try {
+      return localStorage.getItem('neuropad_auth') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
   const [pinInput, setPinInput] = useState('');
   const [thoughts, setThoughts] = useState(() => {
-    const saved = localStorage.getItem('neuropad_notes');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('neuropad_notes');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Failed to parse notes:", e);
+      return [];
+    }
   });
   const [inputValue, setInputValue] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    localStorage.setItem('neuropad_notes', JSON.stringify(thoughts));
+    try {
+      localStorage.setItem('neuropad_notes', JSON.stringify(thoughts));
+    } catch (e) {
+      console.error("Failed to save notes:", e);
+    }
   }, [thoughts]);
 
   const handleLogin = (e) => {
     if (e) e.preventDefault();
-    const correctPin = import.meta.env.VITE_ACCESS_PIN || '1111';
+    const correctPin = (import.meta.env && import.meta.env.VITE_ACCESS_PIN) || '1111';
     if (pinInput === correctPin) {
       setIsAuthenticated(true);
       localStorage.setItem('neuropad_auth', 'true');
@@ -49,18 +64,18 @@ export default function App() {
       isCompleted: false,
     };
 
-    setThoughts([newNote, ...thoughts]);
+    setThoughts(prev => [newNote, ...prev]);
     setInputValue('');
     setSelectedImage(null);
   };
 
   const toggleComplete = (id) => {
-    setThoughts(thoughts.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
+    setThoughts(prev => prev.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
   };
 
   const deleteNote = (id) => {
     if (window.confirm("메모를 삭제하시겠습니까?")) {
-      setThoughts(thoughts.filter(t => t.id !== id));
+      setThoughts(prev => prev.filter(t => t.id !== id));
     }
   };
 
@@ -70,13 +85,15 @@ export default function App() {
     const link = document.createElement('a');
     link.href = url;
     link.download = `neuropad_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#fcfcfc] flex items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-white border border-gray-100 rounded-[40px] p-10 shadow-[0_30px_60px_rgba(0,0,0,0.05)] text-center animate-slide-up">
+        <div className="w-full max-w-sm bg-white border border-gray-100 rounded-[40px] p-10 shadow-[0_30px_60px_rgba(0,0,0,0.05)] text-center">
           <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-8">
             <Lock className="text-blue-500" size={28} />
           </div>
@@ -85,13 +102,15 @@ export default function App() {
           <form onSubmit={handleLogin} className="space-y-4">
             <input
               type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={pinInput}
               onChange={(e) => setPinInput(e.target.value.replace(/[^0-9]/g, ''))}
               placeholder="••••"
               maxLength={4}
               className="w-full bg-gray-50 border-none rounded-2xl py-4 text-center text-2xl tracking-[0.5em] focus:ring-2 focus:ring-blue-100 outline-none transition-all"
             />
-            <button className="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl hover:bg-black transition-all">입장</button>
+            <button type="submit" className="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl hover:bg-black transition-all">입장</button>
           </form>
         </div>
       </div>
@@ -107,10 +126,10 @@ export default function App() {
             <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Minimalist Image Diary</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={exportData} className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-blue-500 hover:border-blue-100 transition-all shadow-sm">
+            <button onClick={exportData} title="백업 다운로드" className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-blue-500 hover:border-blue-100 transition-all shadow-sm">
               <Download size={20} />
             </button>
-            <button onClick={() => { setIsAuthenticated(false); localStorage.removeItem('neuropad_auth'); }} className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-red-500 hover:border-red-100 transition-all shadow-sm">
+            <button onClick={() => { setIsAuthenticated(false); localStorage.removeItem('neuropad_auth'); }} title="로그아웃" className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-red-500 hover:border-red-100 transition-all shadow-sm">
               <LogOut size={20} />
             </button>
           </div>
@@ -139,7 +158,7 @@ export default function App() {
               {selectedImage && (
                 <div className="relative group">
                   <img src={selectedImage} className="w-10 h-10 rounded-lg object-cover border border-gray-100" />
-                  <button onClick={() => setSelectedImage(null)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-all">
+                  <button type="button" onClick={() => setSelectedImage(null)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-all">
                     <X size={10} />
                   </button>
                 </div>
@@ -154,7 +173,7 @@ export default function App() {
 
         <div className="space-y-8">
           {thoughts.length > 0 ? thoughts.map((note) => (
-            <div key={note.id} className="group relative flex gap-8 items-start animate-slide-up">
+            <div key={note.id} className="group relative flex gap-8 items-start">
               <div className="flex flex-col items-center gap-2 pt-2">
                 <button 
                   onClick={() => toggleComplete(note.id)}
@@ -162,12 +181,12 @@ export default function App() {
                 >
                   {note.isCompleted ? <CheckCircle size={24} /> : <Circle size={24} />}
                 </button>
-                <div className="w-[2px] h-full bg-gray-50 group-last:hidden"></div>
+                <div className="w-[2px] h-full min-h-[40px] bg-gray-50 group-last:hidden"></div>
               </div>
 
-              <div className={`flex-1 memo-card p-6 flex gap-6 ${note.isCompleted ? 'opacity-50' : ''}`}>
+              <div className={`flex-1 bg-white border border-gray-100 rounded-[24px] p-6 flex gap-6 shadow-sm ${note.isCompleted ? 'opacity-50' : ''}`}>
                 {note.image && (
-                  <div className="w-1/3 min-w-[120px]">
+                  <div className="w-1/3 min-w-[100px] max-w-[150px]">
                     <img src={note.image} alt="memo" className="w-full aspect-square object-cover rounded-2xl border border-gray-50" />
                   </div>
                 )}
@@ -199,3 +218,4 @@ export default function App() {
     </div>
   );
 }
+
