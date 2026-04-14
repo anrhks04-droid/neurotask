@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Image as ImageIcon, Trash2, CheckCircle, Circle, Calendar, Download, LogOut, Lock, X } from 'lucide-react';
 
 export default function App() {
-  useEffect(() => {
-    alert("NeuroPad 앱이 시작되었습니다!");
-  }, []);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
 
     try {
