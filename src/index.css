@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-color: #fcfcfc;
+  --panel-bg: #ffffff;
+  --border-color: #f0f0f0;
+  --text-main: #1a1a1a;
+  --text-muted: #888888;
+  --accent-color: #2563eb;
+}
+
+@layer base {
+  body {
+    @apply bg-[#fcfcfc] text-[#1a1a1a] antialiased overflow-x-hidden;
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+@layer components {
+  .memo-card {
+    @apply bg-white border border-[#f0f0f0] rounded-[32px] transition-all duration-300;
+  }
+  
+  .memo-card:hover {
+    @apply shadow-[0_20px_50px_rgba(0,0,0,0.04)] border-transparent;
+  }
+}
+
+.paper-texture {
+  background-image: 
+    linear-gradient(#f0f0f0 1.1px, transparent 1.1px),
+    linear-gradient(90deg, #f0f0f0 1.1px, #ffffff 1.1px);
+  background-size: 30px 30px;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
